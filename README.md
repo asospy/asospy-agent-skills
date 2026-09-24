@@ -17,14 +17,14 @@ Each skill is a folder with a `SKILL.md` file. It says when to use the skill, wh
 
 You need an ASOSpy workspace with API access and an **MCP key** (it starts with `asp_mcp_`). Create one in ASOSpy under **Account > API keys > MCP keys**. MCP keys are separate from the REST API keys.
 
-- Server URL: `https://mcp.asospy.com/mcp` (Streamable HTTP)
+- Server URL: `https://mcp.asospy.dev/api` (Streamable HTTP)
 - Header: `Authorization: Bearer <your MCP key>`
 
 Claude Code:
 
 ```bash
 export ASOSPY_API_KEY="asp_mcp_..."
-claude mcp add --transport http --scope user asospy https://mcp.asospy.com/mcp \
+claude mcp add --transport http --scope user asospy https://mcp.asospy.dev/api \
   --header "Authorization: Bearer ${ASOSPY_API_KEY}"
 ```
 
