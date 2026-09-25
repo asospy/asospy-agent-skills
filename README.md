@@ -15,15 +15,15 @@ Each skill is a folder with a `SKILL.md` file. It says when to use the skill, wh
 
 ## 1. Connect the ASOSpy MCP server
 
-You need an ASOSpy workspace with API access and an **MCP key** (it starts with `asp_mcp_`). Create one in ASOSpy under **Account > API keys > MCP keys**. MCP keys are separate from the REST API keys.
+You need an ASOSpy workspace with API access and an **API key** (it starts with `ask_`). Create one in ASOSpy under **AI Agents > API Keys**. The same key works for the MCP server and the REST API, and both share your plan's monthly quota.
 
 - Server URL: `https://mcp.asospy.dev/api` (Streamable HTTP)
-- Header: `Authorization: Bearer <your MCP key>`
+- Header: `Authorization: Bearer <your API key>`
 
 Claude Code:
 
 ```bash
-export ASOSPY_API_KEY="asp_mcp_..."
+export ASOSPY_API_KEY="ask_..."
 claude mcp add --transport http --scope user asospy https://mcp.asospy.dev/api \
   --header "Authorization: Bearer ${ASOSPY_API_KEY}"
 ```
@@ -63,7 +63,7 @@ The server also has built-in prompts with the same names (`app_discovery`, `keyw
 - `ratingsCount` is a number of ratings; `ratingScore` is the 1–5 average.
 - `applePopularity` is Apple Search Ads popularity for the **US** App Store. `volume`, `cpc` and `competition` are Google Ads figures.
 - Ads data covers app-ads.txt publisher lines and scraped Apple Search Ads appearances (iOS, beta). There are no ad creatives, spend or impressions.
-- Every call counts against your workspace's monthly API quota, and the plan's per-minute limit applies.
+- Every tool call counts against your workspace's monthly API quota, the same quota as REST API calls, and the plan's per-minute limit applies.
 
 ## Tools used by the skills
 
