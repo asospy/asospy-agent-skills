@@ -1,6 +1,6 @@
 # ASOSpy Agent Skills
 
-Skills that teach AI agents (Claude Code, Codex, Cursor and others) how to do App Store and Google Play research with the [ASOSpy MCP server](https://asospy.com/mcp).
+Skills that teach AI agents (Claude Code, Codex, Cursor and others) how to do App Store and Google Play research with the [ASOSpy MCP server](https://asospy.dev/mcp).
 
 Each skill is a folder with a `SKILL.md` file. It says when to use the skill, what to ask for, which ASOSpy tools to call in which order, what to return, and what the data cannot tell you.
 
@@ -28,7 +28,7 @@ claude mcp add --transport http --scope user asospy https://mcp.asospy.dev/api \
   --header "Authorization: Bearer ${ASOSPY_API_KEY}"
 ```
 
-Setup for Cursor, Codex, Claude Desktop, Gemini CLI, VS Code, Cline, Continue and Devin Desktop: <https://asospy.com/mcp#setup>.
+Setup for Cursor, Codex, Claude Desktop, Gemini CLI, VS Code, Cline, Continue and Devin Desktop: <https://asospy.dev/mcp#setup>.
 
 ## 2. Install the skills
 
