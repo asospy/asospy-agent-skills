@@ -18,11 +18,11 @@ description: Compare an app with its competitors on installs, revenue estimates,
 | Competitors | found automatically | 3–5 apps. |
 | Country | `us` | Two letters; used for chart ranks. |
 
-If a name is ambiguous, the tool returns `APP_NOT_FOUND` with `details.candidates`. Pick the right one (ask the user if unsure) and call again with its `id`.
+If a name is ambiguous, the tool returns `APP_NOT_FOUND` with `details.candidates`. Pick the right one (ask the user if unsure) and call again with its `id`. A name that exists on both stores (for example "Headspace") needs `store: "ios"` or `store: "android"`.
 
 ## Tools
 
-`get_app_detail`, `search_apps`, `get_app_historicals`, `get_store_ranking_history`, `search_ads` (`mode: "app_keywords"`, iOS only).
+`get_app_detail`, `search_apps`, `get_app_historicals`, `get_store_ranking_history`, `search_ads` (`mode: "app_keywords"`, iOS only; `mode: "app_ad_networks"`, both stores).
 
 ## Workflow
 
@@ -32,12 +32,14 @@ If a name is ambiguous, the tool returns `APP_NOT_FOUND` with `details.candidate
 4. `get_app_historicals` for every app with `metrics: ["installs", "revenue", "score"]` (last 90 days).
 5. `get_store_ranking_history` for every app with the country: best rank, current rank, stability.
 6. iOS apps: `search_ads` with `mode: "app_keywords"` and `app: <id>` to see which Apple Search Ads keywords they appear on.
+7. Optional, when ads monetisation matters: `search_ads` with `mode: "app_ad_networks"` and `app: <id>` for each app. It lists the ad networks and publisher IDs in the app's app-ads.txt, networks with DIRECT lines (the owner's own accounts) first. To see which other apps use the same account, pass a publisher ID to `mode: "publisher_apps"`.
 
 ## Output
 
 1. Comparison table: app, installs, daily installs, revenue (estimate), `ratingScore`, `ratingsCount`, best chart rank, 90-day installs change, last update.
 2. For each competitor: two things it does better and one weakness, each backed by a number from the table.
-3. Five actions for the user's app, most important first.
+3. If step 7 ran: the ad networks each app lists, and which ones they share.
+4. Five actions for the user's app, most important first.
 
 ## Limitations
 
@@ -45,3 +47,4 @@ If a name is ambiguous, the tool returns `APP_NOT_FOUND` with `details.candidate
 - Chart ranks exist only while an app is in a chart; no rank is not the same as rank 0.
 - Apple Search Ads data is a scraped sample (iPhone, short history, beta). No row does not prove an app does not advertise. There are no spend, impressions or creatives.
 - `get_app_historicals` has no per-country split.
+- app-ads.txt only declares which ad networks may sell an app's ad space. It does not show which ads run or how much they earn, and a developer's apps usually share one list.

@@ -33,7 +33,7 @@ Ask for these only when they matter and are missing:
 
 ## Workflow
 
-1. `search_apps` with the main query, `sort: "installs"`, `limit: 20`. Add `search_in: ["title", "short_description"]` when the query is a feature, not a name.
+1. `search_apps` with the main query, `sort: "installs"`, `limit: 20`. Without `search_in`, the query matches titles and short descriptions (the App Store subtitle, the Google Play summary), which suits most feature searches. For a broader search that also reads the long description, pass `search_in: ["title", "short_description", "description"]`.
 2. `search_apps` with the same filters and `sort: "daily_installs"`: the apps growing now.
 3. Optional: `sort: "released"` with `released_after` (YYYY-MM-DD) to find new entrants.
 4. Remove off-topic rows (a query word can match an unrelated title). Keep 5–10 apps.
@@ -41,6 +41,8 @@ Ask for these only when they matter and are missing:
 6. For the 3 most interesting apps, `get_app_historicals` with `metrics: ["installs", "revenue"]` (the last 90 days by default) to confirm the trend.
 
 Use `pagination.nextCursor` only when the first page is not enough. Each page is one call against the quota.
+
+Rows follow `sort`, not text relevance. To look up one known app by name, use `get_app_detail`; a name that exists on both stores needs `store`.
 
 ## Output
 
@@ -51,7 +53,7 @@ Use `pagination.nextCursor` only when the first page is not enough. Each page is
 ## Limitations
 
 - iOS installs and all revenue are ASOSpy estimates. Revenue can be `null` (no estimate); do not read `null` as zero.
-- Small apps show installs as text such as `"< 1k"`. Say so; do not turn it into a number.
+- Small apps show installs as text, `"< 100"` (Google Play) or `"< 1k"` (App Store). Say so; do not turn it into a number. `get_app_historicals` keeps these days as numbers: quote a day under `meta.metrics.installs.floor` the same way.
 - `search_apps` has no country filter; titles are the US listing.
 - `min_installs`/`max_installs` do not work with `store: "ios"`. Use daily or monthly installs instead.
 - Removed apps are hidden unless `include_removed: true`.
