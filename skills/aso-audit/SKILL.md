@@ -24,7 +24,7 @@ description: Audit an App Store or Google Play listing — title, subtitle or sh
 ## Workflow
 
 1. `get_app_detail` with `country`: title, subtitle / short description, description, category, `ratingScore`, `ratingsCount`, last update, size (Google Play only), price.
-2. Take 3–5 core terms from the title and subtitle. `search_keywords` for each: are they terms with real demand (`applePopularity`, `volume`)? For an iOS app audited outside the US, `applePopularity` is the US figure, so also check these terms with `live_keyword_metrics` (`source: "apple"`, `storefront: <country>`). It allows 10 lookups per minute per workspace.
+2. Take 3–5 core terms from the title and subtitle. `search_keywords` for each: are they terms with real demand (`applePopularity`, `volume`)? For an iOS app audited outside the US, `applePopularity` is the US figure, so also check these terms with `live_keyword_metrics` (`source: "apple"`, `storefront: <country>`). Use it the same way when a figure is missing or stale (old `updatedAt` / `appleUpdatedAt`). Each live lookup costs 3 quota units (1 when `cached: true`), and the tool allows 10 lookups per minute per workspace.
 3. `search_keywords` for the app's core use case (2–3 seeds) to find strong keywords the listing does not use.
 4. `search_apps` for the top 3 apps in the same category (`sort: "installs"`) and compare their titles and subtitles with `get_app_detail`.
 5. `get_store_ranking_history` with `country`: where the app charts and how stable it is.
@@ -49,5 +49,5 @@ Then the 5 most important fixes in order, each with the expected benefit.
 ## Limitations
 
 - The audit cannot see screenshots, the icon, the preview video or the iOS hidden keyword field. Say so rather than guessing.
-- Keyword metrics: `applePopularity` from `search_keywords` is US App Store only; `live_keyword_metrics` measures other storefronts one keyword at a time. Google figures are not store search counts. `measured: false` from `live_keyword_metrics` means unknown, not 0.
+- Keyword metrics: `applePopularity` from `search_keywords` is US App Store only; `live_keyword_metrics` measures other storefronts one keyword at a time, and those non-US values are not saved in ASOSpy. Google figures are not store search counts. `measured: false` from `live_keyword_metrics` means unknown, not 0.
 - Conversion rate, impressions and page views are not in the data.

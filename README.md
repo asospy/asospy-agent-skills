@@ -70,16 +70,24 @@ The server also has 7 built-in prompts: one per skill (`app_discovery`, `keyword
 - Install figures under the floor (100 on Google Play, 1,000 on the App Store) come back as text, `"< 100"` or `"< 1k"`, not as numbers. `get_app_historicals` is the exception: it keeps numbers so days can be added up, and gives the floor in `meta.metrics.installs.floor`; quote a day under it as `"< 100"` or `"< 1k"`.
 - `ratingsCount` is a number of ratings; `ratingScore` is the 1–5 average.
 - `applePopularity` in `search_keywords` and `search_niches` is Apple Search Ads popularity for the **US** App Store; in a `live_keyword_metrics` row it is for the `storefront` you asked for. `volume`, `cpc` and `competition` are Google Ads figures.
+- `search_keywords` rows say when each figure was last saved: `updatedAt` for the Google figures and `appleUpdatedAt` for `applePopularity`. Use them to spot stale values.
 - Ads data covers app-ads.txt lines (the ad networks and publisher IDs an app lists) and scraped Apple Search Ads appearances (iOS, beta). There are no ad creatives, spend or impressions.
 
 ## Quota and limits
 
-- A successful tool call uses one unit of your workspace's monthly API quota, the same quota as REST API calls. This includes a result with no rows, or a `live_keyword_metrics` row with `measured: false`. Connecting, listing tools and prompts, and reading a prompt are free.
-- Failed calls are free, with two exceptions:
-  - A `live_keyword_metrics` lookup that Apple or Google refused (`details.reason` is `rate_limited` or `upstream_error`) still uses its unit.
-  - A name lookup that returns `APP_NOT_FOUND` with `details.candidates` uses its unit, because the candidates are search results.
+- A successful tool call uses one unit of your workspace's monthly API quota, the same quota as REST API calls. This includes a result with no rows. Connecting, listing tools and prompts, and reading a prompt are free.
+- `live_keyword_metrics` costs more when it goes to the source:
+
+  | Result | Units |
+  |---|---|
+  | Measured live at Apple or Google (`cached: false`), also a row with `measured: false` | 3 |
+  | Answered from the cache (`cached: true`) | 1 |
+  | Apple or Google refused or failed the lookup, or ASOSpy did not run it: no working session, the live service is busy, live lookups are switched off, a per-minute limit below, or the monthly live refreshes are used up | 0 |
+
+- Each new live measurement (`cached: false`) also uses one of the workspace's monthly live keyword refreshes, shared with the live refresh on the ASOSpy website: 50 on Individual, 500 on Start-up and 2,000 on Business. A cached answer and a failed lookup do not use one. A result shows what is left in `meta.allowance` (`limit`, `remaining`, `resetsAt`). When they are used up, the tool returns `INSUFFICIENT_QUOTA` with `details.reason: "allowance_used"`, `details.limit` and `details.resetsAt`. The monthly API quota is separate, so the other tools keep working.
+- Failed calls are free, with one exception: a name lookup that returns `APP_NOT_FOUND` with `details.candidates` uses its unit, because the candidates are search results.
 - The plan's per-minute limit applies to every request to the server. Over it, the server answers HTTP 429 `RATE_LIMITED` with `details.retryAfter` in seconds. With no quota left, a tool returns `INSUFFICIENT_QUOTA` with `details.resetsAt`.
-- `live_keyword_metrics` has its own limit: 10 lookups per minute per workspace, shared with the live keyword lookup on the ASOSpy website. Over it, the tool returns `RATE_LIMITED` with `details.retryAfter`; that refusal is free.
+- `live_keyword_metrics` has its own limits: 10 new measurements per minute per user and 10 per minute per workspace, shared with the live keyword refresh on the ASOSpy website. Cached answers do not count. Over a limit, the tool returns `RATE_LIMITED` with `details.reason: "throttled"`, `details.scope` (`user` or `workspace`) and `details.retryAfter`; that refusal is free.
 
 ## Errors
 
@@ -89,14 +97,20 @@ A tool error has `error.code`, `error.message`, `error.hint` and `error.details`
 - `APP_NOT_FOUND`: no app matched. When a name fits several apps, `details.candidates` lists them, most popular first; call again with the right `id`. A name that exists on both stores (for example "Headspace") needs `store: "ios"` or `store: "android"`.
 - `COUNTRY_NOT_SUPPORTED` / `STORE_NOT_SUPPORTED`: the tool does not cover that country or store, or the app is on the other store than the `store` you passed.
 - `RATE_LIMITED` / `INSUFFICIENT_QUOTA`: see Quota and limits. A `RATE_LIMITED` tool error can also mean too many parallel calls from one workspace; wait and retry.
-- `live_keyword_metrics` refused by Apple or Google: `RATE_LIMITED` with `details.reason: "rate_limited"` (no `retryAfter`; try again in a minute) or `INTERNAL_ERROR` with `details.reason: "upstream_error"`. Both still use their unit. Other failures of this tool, such as an expired crawler session, are free.
+- `live_keyword_metrics` failures are free (0 units, no live refresh used):
+  - Apple or Google asked to slow down: `RATE_LIMITED` with `details.reason: "rate_limited"` and `details.retryAfter`.
+  - The live service is busy: `RATE_LIMITED` with `details.reason: "busy"` and `details.retryAfter`.
+  - No working session, or Apple or Google refused the stored session: `INTERNAL_ERROR` with `details.reason` `"no_session"` or `"session_rejected"`.
+  - Apple or Google did not answer: `INTERNAL_ERROR` with `details.reason: "upstream_error"`.
+  - Live lookups switched off: `INTERNAL_ERROR` with `details.reason: "disabled"`.
+  - Read `error.message`, use `search_keywords` for the stored values, and try again later.
 - `INTERNAL_ERROR`: a server-side failure; try again shortly.
 - `UNAUTHORIZED`: the workspace's plan does not include the feature (a tool error), or, as HTTP 401, the key's holder is no longer a workspace owner or admin, the account is suspended, or the plan has no API access. A new key does not fix these.
 - `INVALID_API_KEY` (HTTP 401): the key is missing, wrong or switched off (see API key rules).
 
 ## Tools
 
-The server has 11 tools. Every tool is read-only. Your MCP client shows each tool's full argument list.
+The server has 11 tools. No tool can change your account, your workspace or your tracked apps. Ten tools only read ASOSpy data; `live_keyword_metrics` also saves the values it measures (below). Your MCP client shows each tool's full argument list.
 
 | Tool | Returns |
 |---|---|
@@ -105,12 +119,12 @@ The server has 11 tools. Every tool is read-only. Your MCP client shows each too
 | `get_app_historicals` | Daily `installs`, `revenue`, `ratings`, `reviews` and `score`; at most 366 days per call (default: the last 90 days). |
 | `list_store_rankings` | One top chart (free, paid or grossing) for a store, country and category. |
 | `get_store_ranking_history` | An app's chart ranks over time. |
-| `search_keywords` | Related keywords with Google `volume`, `cpc`, `competition`, US `applePopularity` and the top apps. |
+| `search_keywords` | Related keywords with Google `volume`, `cpc`, `competition`, US `applePopularity`, when they were saved (`updatedAt`, `appleUpdatedAt`) and the top apps. |
 | `get_app_reviews` | Store reviews: most recent, highest rated or lowest rated first. |
 | `search_ads` | Ads data in four modes (below). |
 | `get_supported_countries` | The storefronts ASOSpy tracks. |
 | `search_niches` | A keyword's market (apps, developers, installs, top apps) plus related keywords. |
-| `live_keyword_metrics` | One keyword measured live at Apple or Google (below). |
+| `live_keyword_metrics` | One keyword measured live at Apple or Google, and saved in ASOSpy (below). |
 
 `search_ads` modes:
 
@@ -119,10 +133,14 @@ The server has 11 tools. Every tool is read-only. Your MCP client shows each too
 - `app_keywords` (`app`: an App Store app): the keywords the app was seen advertising on (iOS).
 - `app_ad_networks` (`app`: an app on either store): the ad networks and publisher IDs in the app's app-ads.txt, networks with DIRECT lines (the app owner's own accounts) first. Pass a publisher ID to `publisher_apps` to see the other apps on that account.
 
-`live_keyword_metrics` takes `keyword`, `source` (`apple` or `google`) and, for Apple, an optional `storefront` (default `US`):
+`live_keyword_metrics` takes `keyword` (up to 120 characters), `source` (`apple` or `google`) and, for Apple, an optional `storefront` (two letters, default `US`):
 
 - `apple` returns the keyword's Apple Search Ads popularity (5–100) in that storefront, plus up to 10 related keywords.
-- `google` returns `vol` (Google Keyword Planner monthly searches), `cpc` (USD) and `competition` (0–1).
+- `google` returns `vol` (Google Keyword Planner monthly searches, worldwide), `cpc` (USD) and `competition` (0–1).
 - `measured: false` means Apple or Google did not answer for this exact keyword: its value is unknown, not 0.
-- Use it for a keyword that `search_keywords` does not have or shows as stale, or for Apple popularity outside the US. For lists of keywords, use `search_keywords`.
-- One keyword per call, 10 per minute per workspace (see Quota and limits).
+- Every result has `cached`, `saved` and `measuredAt`:
+  - `cached: true`: ASOSpy measured the same keyword recently and returns that measurement instead of asking again. Apple results are kept for 24 hours per storefront, Google results for 7 days. `measuredAt` says when the value was measured.
+  - `saved: true`: the new value is now stored in ASOSpy, so `search_keywords` and the ASOSpy website show it to every user. Google values are saved every time they are measured. Apple popularity is saved only for the `US` storefront; other storefronts are returned and cached but not saved.
+  - ASOSpy never saves a value that was not measured, and it does not save an Apple popularity of 0 over a stored value above 10 (`saved: false`).
+- Use it for a keyword that `search_keywords` does not have or shows as stale (old `updatedAt` / `appleUpdatedAt`), or for Apple popularity outside the US. For lists of keywords, use `search_keywords`.
+- One keyword per call, 10 new measurements per minute per user and per workspace. A live measurement costs 3 units and one monthly live refresh, a cached answer 1 unit, a failed lookup nothing (see Quota and limits).

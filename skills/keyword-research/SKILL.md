@@ -21,10 +21,10 @@ description: Build an App Store / Google Play keyword shortlist around a seed te
 
 ## Tools
 
-- `search_keywords` — related keywords with metrics; sort by `apple_popularity`, `volume`, `cpc`, `competition` or `keyword`; filters `contains`, `min_/max_apple_popularity`, `min_/max_volume_score`, `min_/max_cpc`, `min_/max_competition`.
+- `search_keywords` — related keywords with metrics and when they were last saved (`updatedAt` for Google, `appleUpdatedAt` for Apple); sort by `apple_popularity`, `volume`, `cpc`, `competition` or `keyword`; filters `contains`, `min_/max_apple_popularity`, `min_/max_volume_score`, `min_/max_cpc`, `min_/max_competition`.
 - `search_niches` — the seed's market size (apps, developers, installs) plus related keywords.
 - `get_app_detail` — the user's app title, subtitle / short description and description.
-- `live_keyword_metrics` — one keyword measured live: `source: "apple"` for Apple popularity in a storefront, `source: "google"` for Google volume, CPC and competition. At most 10 per minute per workspace.
+- `live_keyword_metrics` — one keyword measured live: `source: "apple"` for Apple popularity in a storefront, `source: "google"` for Google volume, CPC and competition. It saves Google values and US Apple values in ASOSpy, so later `search_keywords` calls show them. Costs 3 quota units, or 1 when the answer comes from the cache (`cached: true`); at most 10 per minute per workspace.
 
 How `search_keywords` matches the seed: a word of up to 4 letters (for example `vpn`) matches only exactly, with no typo matching. A 5-letter word also matches with 1 typo, and a longer word with up to 2.
 
@@ -37,11 +37,11 @@ How `search_keywords` matches the seed: a word of up to 4 letters (for example `
 5. Classify: head terms (high popularity), long-tail terms (specific, lower popularity), brand terms (a competitor's name — usually not worth targeting).
 6. If an app was given: `get_app_detail`, then mark each keyword as used in the title, used in the subtitle / short description, or missing.
 7. Optional: `search_niches` with the seed for the market size.
-8. Optional: `live_keyword_metrics` for the 3–5 shortlisted keywords that matter most when a figure is missing or looks stale, or when the user targets a storefront other than the US (`source: "apple"`, `storefront`). `measured: false` means the value is unknown, not 0.
+8. Optional: `live_keyword_metrics` for the 3–5 shortlisted keywords that matter most when a figure is missing or stale (no or an old `updatedAt` / `appleUpdatedAt`), or when the user targets a storefront other than the US (`source: "apple"`, `storefront`). Do not call it for every row: each live call costs 3 units. `measured: false` means the value is unknown, not 0.
 
 ## Output
 
-1. A table: keyword, `applePopularity`, `volume`, `competition`, `cpc`, top ranking apps, type (head / long-tail / brand), used by the app (if given).
+1. A table: keyword, `applePopularity`, `volume`, `competition`, `cpc`, top ranking apps, type (head / long-tail / brand), used by the app (if given). Mark values from `live_keyword_metrics` as live, with their `measuredAt` date.
 2. The 5 keywords to target first, each with one line on why (demand vs. how strong the top apps are).
 3. Keywords to avoid and why.
 
@@ -52,4 +52,6 @@ How `search_keywords` matches the seed: a word of up to 4 letters (for example `
 - The keyword list has no per-country split, and the top apps shown are from the US store.
 - The backend works on the 10,000 highest-volume matches for a seed, so a very broad seed can hide rare long-tail terms. Use narrower seeds or `contains`.
 - Seed words of up to 4 letters get no typo matching, so check their spelling.
-- A `live_keyword_metrics` lookup that Apple or Google answers with an error (`details.reason` `rate_limited` or `upstream_error`) still uses its quota unit; other failures, including the 10-per-minute limit, are free.
+- A live `live_keyword_metrics` call costs 3 quota units when Apple or Google answers, and 1 unit when the answer comes from the cache (Apple results are cached for 24 hours, Google results for 7 days). A failed lookup is free: Apple or Google refused or failed (`details.reason` `rate_limited`, `session_rejected` or `upstream_error`), or ASOSpy did not run it (no session, busy, switched off, or over the 10-per-minute limit).
+- Each new live measurement also uses one of the workspace's monthly live refreshes (50 on Individual, 500 on Start-up, 2,000 on Business), shared with the ASOSpy website. When they are used up, the tool returns `INSUFFICIENT_QUOTA` with `details.reason: "allowance_used"` and `details.resetsAt`; keep using `search_keywords` for the stored values.
+- Apple popularity measured live outside the US is not saved: `search_keywords` keeps showing the US figure. Report the storefront figure from the live call.
