@@ -1,0 +1,18 @@
+{
+  "name": "asospy",
+  "version": "1.0.0",
+  "description": "App Store and Google Play market intelligence for Claude: find apps, read installs and revenue estimates, top charts, keyword research, user reviews and ad data through the ASOSpy MCP server, with six research skills.",
+  "author": {
+    "name": "ASOSpy LLC",
+    "url": "https://asospy.com"
+  },
+  "homepage": "https://asospy.com/mcp",
+  "repository": "https://github.com/asospy/asospy-agent-skills",
+  "license": "MIT",
+  "keywords": ["aso", "app store", "google play", "keywords", "app intelligence", "mcp"],
+  "icon": "./assets/logo.png",
+  "documentationUrl": "https://asospy.com/mcp",
+  "supportUrl": "https://asospy.com/contact-us",
+  "privacyPolicyUrl": "https://asospy.com/privacy-policy",
+  "termsOfServiceUrl": "https://asospy.com/terms-and-condition"
+}
