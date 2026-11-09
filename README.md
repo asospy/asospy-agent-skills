@@ -42,15 +42,11 @@ API key rules:
 - Changing your password, resetting it, or signing out of every device at once ("sign out everywhere") switches off every API key you created.
 - After that, your agent gets HTTP 401 (`INVALID_API_KEY`, "Unknown or revoked API key."). Create a new key and put it in your MCP client.
 
-Claude Code:
+Copy-paste setup for each of these clients: <https://asospy.com/mcp#setup>.
 
-```bash
-export ASOSPY_API_KEY="ask_..."
-claude mcp add --transport http --scope user asospy https://mcp.asospy.dev/api \
-  --header "Authorization: Bearer ${ASOSPY_API_KEY}"
-```
+### Claude plugin
 
-Setup for every client: <https://asospy.com/mcp#setup>.
+This repository is also a Claude plugin: it bundles the six skills below and connects the ASOSpy MCP server. After you install it in Claude Code or Cowork, sign in to ASOSpy with OAuth when Claude asks (in Claude Code, run `/mcp`). No API key is needed.
 
 ## 2. Install the skills
 
