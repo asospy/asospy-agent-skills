@@ -1,6 +1,6 @@
 # ASOSpy Agent Skills
 
-Skills that teach AI agents (Claude Code, Codex, Cursor and others) how to do App Store and Google Play research with the [ASOSpy MCP server](https://asospy.dev/mcp).
+Skills that teach AI agents (ChatGPT, Claude, Claude Code, Codex, Cursor and others) how to do App Store and Google Play research with the [ASOSpy MCP server](https://asospy.com/mcp).
 
 Each skill is a folder with a `SKILL.md` file. It says when to use the skill, what to ask for, which ASOSpy tools to call in which order, what to return, and what the data cannot tell you.
 
@@ -15,15 +15,30 @@ Each skill is a folder with a `SKILL.md` file. It says when to use the skill, wh
 
 ## 1. Connect the ASOSpy MCP server
 
-You need an ASOSpy workspace with API access and an **API key** (it starts with `ask_`). Create one in ASOSpy under **AI Agents > API Keys**. The same key works for the MCP server and the REST API, and both share your plan's monthly quota.
-
 - Server URL: `https://mcp.asospy.dev/api` (Streamable HTTP)
+- You need an ASOSpy workspace whose plan includes API access, and you must be an owner or admin of it.
+- Every tool call counts toward that workspace's monthly API quota, shared with the REST API.
+
+There are two ways to sign in. Pick the one your client supports.
+
+### ChatGPT and Claude: OAuth sign-in (no API key)
+
+Add ASOSpy as a custom connector with the server URL above and OAuth sign-in. The client registers itself, so there is no client ID or secret to enter. Then connect, sign in to ASOSpy, pick the workspace and choose **Allow**.
+
+- **ChatGPT:** add ASOSpy as a custom connector (app) with OAuth. Whether you can add custom connectors depends on your ChatGPT plan and workspace settings.
+- **Claude (web, desktop, mobile):** Customize → Connectors → Add custom connector. On Team and Enterprise plans, an Owner adds it under Organization settings → Connectors. Leave the OAuth client ID and secret empty, and do not choose "Use Claude's published identity".
+
+Full guide for admins: <https://asospy.com/docs/mcp/admin-setup>.
+
+### Agents in your terminal or IDE: API key
+
+Claude Code, Codex, Cursor, Gemini CLI, VS Code, Cline, Continue and Devin Desktop send an **API key** (it starts with `ask_`). Create one in ASOSpy under **AI Agents > API Keys**. The same key works for the MCP server and the REST API.
+
 - Header: `Authorization: Bearer <your API key>`
 
 API key rules:
 
 - Only a workspace owner or admin can create keys.
-- Creating a key and rotating a key both ask for your ASOSpy account password. If you sign in with Google or Apple and have no password yet, set one first with **Forgot password?** on the sign-in page. Setting it this way is a password reset, so it also switches off the keys you already have.
 - Changing your password, resetting it, or signing out of every device at once ("sign out everywhere") switches off every API key you created.
 - After that, your agent gets HTTP 401 (`INVALID_API_KEY`, "Unknown or revoked API key."). Create a new key and put it in your MCP client.
 
@@ -35,7 +50,7 @@ claude mcp add --transport http --scope user asospy https://mcp.asospy.dev/api \
   --header "Authorization: Bearer ${ASOSPY_API_KEY}"
 ```
 
-Setup for Cursor, Codex, Claude Desktop, Gemini CLI, VS Code, Cline, Continue and Devin Desktop: <https://asospy.dev/mcp#setup>.
+Setup for every client: <https://asospy.com/mcp#setup>.
 
 ## 2. Install the skills
 
