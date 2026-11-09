@@ -16,7 +16,7 @@ Each skill is a folder with a `SKILL.md` file. It says when to use the skill, wh
 ## 1. Connect the ASOSpy MCP server
 
 - Server URL: `https://mcp.asospy.dev/api` (Streamable HTTP)
-- You need an ASOSpy workspace whose plan includes API access, and you must be an owner or admin of it.
+- You need an ASOSpy account and must be an owner or admin of its workspace. A Free account gets 200 tool calls a month and up to 10 results per list through ChatGPT or Claude sign-in; paid plans add API keys, more results, more data and higher limits.
 - Every tool call counts toward that workspace's monthly API quota, shared with the REST API.
 
 There are two ways to sign in. Pick the one your client supports.
