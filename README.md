@@ -44,6 +44,12 @@ API key rules:
 
 Copy-paste setup for each of these clients: <https://asospy.com/mcp#setup>.
 
+Gemini CLI (installs the skills and the MCP server, and asks for your API key once; the key is kept in your system keychain):
+
+```bash
+gemini extensions install https://github.com/asospy/asospy-agent-skills
+```
+
 ### Claude plugin
 
 This repository is also a Claude plugin: it bundles the six skills below and connects the ASOSpy MCP server. After you install it in Claude Code or Cowork, sign in to ASOSpy with OAuth when Claude asks (in Claude Code, run `/mcp`). No API key is needed.

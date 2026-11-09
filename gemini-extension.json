@@ -1,0 +1,22 @@
+{
+  "name": "asospy",
+  "version": "1.0.0",
+  "description": "App Store and Google Play market intelligence: app search, installs and revenue estimates, top charts, keyword research, reviews and ads, through the ASOSpy MCP server, with six research skills.",
+  "contextFileName": "GEMINI.md",
+  "settings": [
+    {
+      "name": "ASOSpy API key",
+      "description": "Your ASOSpy API key (starts with ask_). Create one in ASOSpy under AI Agents > API Keys. Stored in your system keychain.",
+      "envVar": "ASOSPY_API_KEY",
+      "sensitive": true
+    }
+  ],
+  "mcpServers": {
+    "asospy": {
+      "httpUrl": "https://mcp.asospy.dev/api",
+      "headers": {
+        "Authorization": "Bearer ${ASOSPY_API_KEY}"
+      }
+    }
+  }
+}
