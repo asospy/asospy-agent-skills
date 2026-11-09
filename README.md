@@ -16,23 +16,29 @@ Each skill is a folder with a `SKILL.md` file. It says when to use the skill, wh
 ## 1. Connect the ASOSpy MCP server
 
 - Server URL: `https://mcp.asospy.dev/api` (Streamable HTTP)
-- You need an ASOSpy account and must be an owner or admin of its workspace. A Free account gets 200 tool calls a month and up to 10 results per list through ChatGPT or Claude sign-in; paid plans add API keys, more results, more data and higher limits.
+- You need an ASOSpy account and must be an owner or admin of its workspace. A Free account gets 200 tool calls a month and up to 10 results per list through OAuth sign-in (ChatGPT, Claude, Claude Code, Codex, Gemini CLI or Antigravity); paid plans add API keys, more results, more data and higher limits.
 - Every tool call counts toward that workspace's monthly API quota, shared with the REST API.
 
 There are two ways to sign in. Pick the one your client supports.
 
-### ChatGPT and Claude: OAuth sign-in (no API key)
+### OAuth sign-in (no API key)
 
-Add ASOSpy as a custom connector with the server URL above and OAuth sign-in. The client registers itself, so there is no client ID or secret to enter. Then connect, sign in to ASOSpy, pick the workspace and choose **Allow**.
+ChatGPT, Claude, Claude Code, Codex, Gemini CLI and Antigravity sign in to ASOSpy with OAuth. The client registers itself, so there is no client ID or secret to enter. You sign in to ASOSpy in your browser, pick the workspace and choose **Allow**.
 
 - **ChatGPT:** add ASOSpy as a custom connector (app) with OAuth. Whether you can add custom connectors depends on your ChatGPT plan and workspace settings.
 - **Claude (web, desktop, mobile):** Customize → Connectors → Add custom connector. On Team and Enterprise plans, an Owner adds it under Organization settings → Connectors. Leave the OAuth client ID and secret empty, and do not choose "Use Claude's published identity".
+- **Claude Code:** run `claude mcp add --transport http --scope user asospy https://mcp.asospy.dev/api`, then `/mcp` in Claude Code, pick asospy and sign in.
+- **Codex:** run `codex mcp add asospy --url https://mcp.asospy.dev/api`. Codex opens your browser to sign in. To sign in again later, run `codex mcp login asospy`.
+- **Gemini CLI:** install the extension below, or run `gemini mcp add --transport http --scope user asospy https://mcp.asospy.dev/api` and then `/mcp auth asospy` in Gemini CLI.
+- **Antigravity (app, IDE and CLI):** install the plugin below, or add `{"mcpServers": {"asospy": {"serverUrl": "https://mcp.asospy.dev/api"}}}` to `~/.gemini/config/mcp_config.json`. Then open Customizations → Installed → MCP Servers and choose **Authenticate** next to asospy.
+
+Command-line apps get the sign-in answer back on your own computer (`http://localhost`), so the browser and the app must run on the same machine.
 
 Full guide for admins: <https://asospy.com/docs/mcp/admin-setup>.
 
-### Agents in your terminal or IDE: API key
+### API key (Cursor, VS Code and other agents)
 
-Claude Code, Codex, Cursor, Gemini CLI, VS Code, Cline, Continue and Devin Desktop send an **API key** (it starts with `ask_`). Create one in ASOSpy under **AI Agents > API Keys**. The same key works for the MCP server and the REST API.
+Cursor, VS Code, Cline, Continue and Devin Desktop send an **API key** (it starts with `ask_`). Claude Code, Codex, Gemini CLI and Antigravity can use one too, instead of signing in. Create one in ASOSpy under **AI Agents > API Keys** (paid plans). The same key works for the MCP server and the REST API.
 
 - Header: `Authorization: Bearer <your API key>`
 
@@ -44,10 +50,20 @@ API key rules:
 
 Copy-paste setup for each of these clients: <https://asospy.com/mcp#setup>.
 
-Gemini CLI (installs the skills and the MCP server, and asks for your API key once; the key is kept in your system keychain):
+### Gemini CLI extension
+
+Installs the six skills and the ASOSpy MCP server. Gemini CLI then opens your browser to sign in to ASOSpy (or run `/mcp auth asospy`). No API key is needed.
 
 ```bash
 gemini extensions install https://github.com/asospy/asospy-agent-skills
+```
+
+### Antigravity plugin
+
+Installs the six skills and the ASOSpy MCP server in the Antigravity app, IDE and CLI. Antigravity opens your browser to sign in to ASOSpy when the server first connects. No API key is needed.
+
+```bash
+agy plugin install https://github.com/asospy/asospy-agent-skills
 ```
 
 ### Claude plugin

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "asospy": {
+      "url": "https://mcp.asospy.dev/api"
+    }
+  }
+}

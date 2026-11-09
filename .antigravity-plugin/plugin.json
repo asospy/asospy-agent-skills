@@ -1,0 +1,21 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "asospy",
+  "displayName": "ASOSpy",
+  "version": "1.0.0",
+  "description": "App Store and Google Play market intelligence: app search, installs and revenue estimates, top charts, keyword research and user reviews.",
+  "logo": "assets/logo.png",
+  "suggestedPrompts": [
+    "Find meditation apps that are growing fast on iOS",
+    "Do keyword research for a sleep sounds app",
+    "Compare Calm with Headspace and two other competitors on iOS"
+  ],
+  "author": {
+    "name": "ASOSpy LLC",
+    "url": "https://asospy.com"
+  },
+  "homepage": "https://asospy.com/mcp",
+  "repository": "https://github.com/asospy/asospy-agent-skills",
+  "license": "MIT",
+  "keywords": ["aso", "app store", "google play", "keyword research", "app intelligence", "mcp"]
+}
